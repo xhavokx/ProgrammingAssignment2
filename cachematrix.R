@@ -1,10 +1,14 @@
-## Put comments here that give an overall description of what your
-## functions do
+## This R script contains 2 functions which work together to provide the ability to cache the result of calling the solve function on a matrix
 
-## Write a short comment describing this function
+
+## This function returns a list of 4 closures which share the environment of the parent function call, specifically to access a matrix and a cache of it's inverse
+## This shared environment allows the caching of the results of calling the solve
+## Parameters:
+##  x: input matrix to be cached
+## Returns a list of 4 closures which manipulate the environment created by the invocation of this function
 
 makeCacheMatrix <- function(x = matrix()) {
-    m <- NULL
+    c <- NULL
     set <- function(y) {
         x <<- y
         m <<- NULL
@@ -18,10 +22,13 @@ makeCacheMatrix <- function(x = matrix()) {
 }
 
 
-## Write a short comment describing this function
+## This functions takes a list of 4 closures, as returned by the makeCacheMatrix function,
+## and using those calculates the inverse using the solve function. The function initially
+## checks to see if the inverse has previously been calculated, and if so will use that
+## cached value, otherwise it will calculate the inverse, cache it using the provided
+## closures, and return the inverse matrix
 
 cacheSolve <- function(x, ...) {
-        ## Return a matrix that is the inverse of 'x'
     m <- x$getsolve()
     if(!is.null(m)) {
         message("getting cached data")
@@ -30,54 +37,5 @@ cacheSolve <- function(x, ...) {
     data <- x$get()
     m <- solve(data, ...)
     x$setsolve(m)
-    m
-}
-
-
-makeVector <- function(x = numeric()) {
-    # m is the place where we'll store the mean of the vector after it has been calculated
-    # m is initially NULL because we have not calculated the mean - NULL indicates an empty value
-    m <- NULL
-    
-    # set is a function that we'll call to "set" the value of the vector
-    # when called this uses the double headed arrow to assign to a variable which was declared "outside" the scope of this function
-    set <- function(y) {
-        # Set the new value for the vector
-        x <<- y
-        # set m to NULL, to "reset" the mean (since the vector has itself changed, the old mean is no longer valid)
-        m <<- NULL
-    }
-    # Get the current value of the vector
-    get <- function() x
-    # set the value of m, the mean of the vector "x". Using the double headed arrow, as m is declared outside of this function
-    setmean <- function(mean) m <<- mean
-    # get the current mean, which may return NULL if the mean has not been calculated and set
-    getmean <- function() m
-    
-    # package up the 4 functions into a list to return to the caller
-    list(set = set, get = get,
-         setmean = setmean,
-         getmean = getmean)
-}
-
-# x is the result of calling makeVector - a list of 4 functions
-cachemean <- function(x, ...) {
-    # get the current value of the mean
-    m <- x$getmean()
-    
-    # if m is not null, we can return the value, as we've previously calculated it
-    if(!is.null(m)) {
-        print("getting cached data")
-        return(m)
-    }
-    
-    # else get the vector
-    data <- x$get()
-    # calculate the mean
-    m <- mean(data, ...)
-    # set the mean in the "makeVector" list of functions
-    x$setmean(m)
-    
-    # and return the mean we just calculated
     m
 }
